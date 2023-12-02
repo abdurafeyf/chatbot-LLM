@@ -1,7 +1,9 @@
 from openai import OpenAI
 import streamlit as st
+from io import BytesIO
+from gtts import gTTS
 
-st.title("Chatbot")
+st.title("Voice Chatbot")
 
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
@@ -33,5 +35,15 @@ if prompt := st.chat_input("What is up?"):
         ):
             full_response += (response.choices[0].delta.content or "")
             message_placeholder.markdown(full_response + "▌")
+
         message_placeholder.markdown(full_response)
+        
+        # Convert the response text to audio using gTTS
+        tts = gTTS(full_response, lang="en")
+        audio_bytes_io = BytesIO()
+        tts.write_to_fp(audio_bytes_io)
+
+        # Play the audio
+        st.audio(audio_bytes_io, format="audio/mp3", start_time=0)
+
     st.session_state.messages.append({"role": "assistant", "content": full_response})
